@@ -13,3 +13,11 @@ For demo Golang researching
 
 ## Compile and install project
 - You can read a documentation that present how to build and install a golang application here: https://go.dev/doc/tutorial/compile-install
+
+### Demo
+
+## APIs:
+- The APIs will run at http://localhost:8080
+1. Get albums: [GET] http://localhost:8080/albums
+2. Get album detail: [GET] http://localhost:8080/albums/{id} (id = 1 to 4)
+3. Add album: [POST] http://localhost:8080/album
