@@ -1,9 +1,9 @@
 package main
 
 /**
- Author: Trung Nguyen
- Description: Create a simple demo API application for list, read, create API
- */
+Author: Trung Nguyen
+Description: Create a simple demo API application for list, read, create API
+*/
 
 import (
 	"connector"
@@ -11,21 +11,24 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // Create data type called "member"
 type member struct {
-	ID		int	`json:"id"`
-	Name	string	`json:"name"`
-	Role	string	`json:"role"`
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+	Role string `json:"role"`
 }
 
-func main()  {
+func main() {
 	// Init routes
 	router := gin.Default()
 	router.GET("/members", getMembers)
 	router.GET("/members/:id", getMemberById)
-	//router.POST("/albums", postAlbum)
+	router.POST("/members", addMember)
+	router.PATCH("/members/:id", updateMember)
+	router.DELETE("/members/:id", deleteMember)
 
 	// Run local server at port 8080
 	err := router.Run("localhost:8080")
@@ -61,13 +64,50 @@ func getMembers(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, members)
 }
 
-//func postAlbum(c *gin.Context) {
-//	var newAlbum album
-//
-//	if err := c.BindJSON(&newAlbum); err != nil {
-//		return
-//	}
-//
-//	albums = append(albums, newAlbum)
-//	c.IndentedJSON(http.StatusCreated, newAlbum)
-//}
+func addMember(c *gin.Context) {
+	var newMember member
+	if err := c.BindJSON(&newMember); err != nil {
+		return
+	}
+
+	result, err := connector.Db.Exec("INSERT INTO members (name, role) VALUES (?, ?)", newMember.Name, newMember.Role)
+	if err != nil {
+		log.Fatal("Error when saving member to database")
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+	}
+	newMember.ID = int(id)
+	c.IndentedJSON(http.StatusCreated, newMember)
+}
+
+func updateMember(c *gin.Context) {
+	var updateInfo member
+	memberId := c.Param("id")
+	if err := c.BindJSON(&updateInfo); err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Error when getting bind update value"})
+	}
+	_, err := connector.Db.Exec("UPDATE members SET name = ?, role = ? WHERE id = ?",
+		updateInfo.Name,
+		updateInfo.Role,
+		memberId)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Error when updating member info"})
+	}
+	updateInfo.ID, err = strconv.Atoi(memberId)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Error converting member id to int"})
+	}
+	c.IndentedJSON(http.StatusOK, updateInfo)
+}
+
+func deleteMember(c *gin.Context) {
+	memberId := c.Param("id")
+	result, err := connector.Db.Exec("DELETE FROM members WHERE id = ?", memberId)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Error when deleting member"})
+	}
+	rowCount, _ := result.RowsAffected()
+	c.IndentedJSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Affected %d row(s)", rowCount)})
+}
