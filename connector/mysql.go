@@ -17,11 +17,11 @@ func init() {
 		log.Fatal("Error when loading .env")
 	}
 	cfg := mysql.Config{
-		User: os.Getenv("DB_USER"),
-		Passwd: os.Getenv("DB_PASSWORD"),
-		Net: os.Getenv("DB_NET"),
-		Addr: os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT"),
-		DBName: os.Getenv("DB_NAME"),
+		User:                 os.Getenv("DB_USER"),
+		Passwd:               os.Getenv("DB_PASSWORD"),
+		Net:                  os.Getenv("DB_NET"),
+		Addr:                 os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT"),
+		DBName:               os.Getenv("DB_NAME"),
 		AllowNativePasswords: true,
 	}
 
@@ -30,8 +30,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	err = Db.Ping()
-	if err != nil {
+	if err = Db.Ping(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -44,10 +43,5 @@ func Query(query string) *sql.Rows {
 	if err != nil {
 		log.Fatal("Error when execute query.")
 	}
-
 	return rows
-}
-
-func QueryRow(query string) *sql.Row {
-	return Db.QueryRow(query)
 }

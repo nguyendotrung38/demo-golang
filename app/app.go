@@ -7,6 +7,7 @@ Description: Create a simple demo API application for list, read, create API
 
 import (
 	"connector"
+	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -40,6 +41,7 @@ func main() {
 func getMemberById(c *gin.Context) {
 	memberId := c.Param("id")
 	row := connector.Db.QueryRow("SELECT * FROM members WHERE id = ?", memberId)
+
 	var member member
 	err := row.Scan(&member.ID, &member.Name, &member.Role)
 	if err != nil {
@@ -50,9 +52,15 @@ func getMemberById(c *gin.Context) {
 }
 
 func getMembers(c *gin.Context) {
-	rows := connector.Query("SELECT * FROM members")
-
 	var members []member
+	rows := connector.Query("SELECT * FROM members")
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Fatal("Error when close database resource")
+		}
+	}(rows)
+
 	for rows.Next() {
 		var row member
 		if err := rows.Scan(&row.ID, &row.Name, &row.Role); err != nil {
@@ -60,7 +68,6 @@ func getMembers(c *gin.Context) {
 		}
 		members = append(members, row)
 	}
-
 	c.IndentedJSON(http.StatusOK, members)
 }
 
