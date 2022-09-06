@@ -4,22 +4,27 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 	"log"
+	"os"
 )
 
 var Db *sql.DB
 
 func init() {
+	err := godotenv.Load("../.env")
+	if err != nil {
+		log.Fatal("Error when loading .env")
+	}
 	cfg := mysql.Config{
-		User: "root",
-		Passwd: "",
-		Net: "tcp",
-		Addr: "127.0.0.1:3306",
-		DBName: "golang_demo",
+		User: os.Getenv("DB_USER"),
+		Passwd: os.Getenv("DB_PASSWORD"),
+		Net: os.Getenv("DB_NET"),
+		Addr: os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT"),
+		DBName: os.Getenv("DB_NAME"),
 		AllowNativePasswords: true,
 	}
 
-	var err error
 	Db, err = sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
 		log.Fatal(err)
