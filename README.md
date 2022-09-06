@@ -7,9 +7,9 @@ For demo Golang researching
 
 ## Run project
 - Clone the project
-- Cope .env.example to .env - then open .env, verify your database infomation to the environment variables.
-- Run seeders/1.add_member_table.sql sql file.
-- In the terminal at the /app directory, run following command to start the application
+- Cope `.env.example` to `.env` - then open `.env`, verify your database infomation to the environment variables.
+- Run `seeders/1.add_member_table.sql` sql file.
+- In the terminal at the `/app` directory, run following command to start the application
 `go run .`
 - Golang will get and download all dependencies that the application required. Then run the application on debug mode.
 
